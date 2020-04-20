@@ -57,3 +57,13 @@ SELECT shohin_bunrui, shohin_mei, hanbai_tanka, shiire_tanka, torokubi, COUNT(*)
 
 /*WHERE句と GROUP BY句を併用する時の処理順序
 FROM => WHERE => GROUP BY => SELECT の順番で処理される*/
+
+--DISTINCTとGROUP BY はどちらも「その後に続く列について重複を排除する」
+SELECT DISTINCT shohin_bunrui FROM Shohin;
+SELECT shohin_bunrui FROM Shohin GROUP BY shohin_bunrui;
+--「DISTINCTは重複を除外」、「GROUP BYは集約している」要件は違うので適した方を使う
+
+SELECT shohin_bunrui,COUNT(*) FROM Shohin GROUP BY shohin_bunrui;
+--ここから２行の列(衣類、事務用品)だけを選択する HAVING句が必要
+
+SELECT shohin_bunrui,COUNT(*) FROM Shohin GROUP BY shohin_bunrui HAVING COUNT(*) = 2;
