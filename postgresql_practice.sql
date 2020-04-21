@@ -56,7 +56,8 @@ SELECT shohin_bunrui, COUNT(*) FROM Shohin GROUP BY shohin_bunrui;
 SELECT shohin_bunrui, shohin_mei, hanbai_tanka, shiire_tanka, torokubi, COUNT(*) FROM Shohin GROUP BY shohin_bunrui;
 
 /*WHERE句と GROUP BY句を併用する時の処理順序
-FROM => WHERE => GROUP BY => SELECT の順番で処理される*/
+FROM => WHERE => GROUP BY => SELECT の順番で処理される
+記述の順番ではない！*/
 
 --DISTINCTとGROUP BY はどちらも「その後に続く列について重複を排除する」
 SELECT DISTINCT shohin_bunrui FROM Shohin;
@@ -67,3 +68,52 @@ SELECT shohin_bunrui,COUNT(*) FROM Shohin GROUP BY shohin_bunrui;
 --ここから２行の列(衣類、事務用品)だけを選択する HAVING句が必要
 
 SELECT shohin_bunrui,COUNT(*) FROM Shohin GROUP BY shohin_bunrui HAVING COUNT(*) = 2;
+
+SELECT shohin_bunrui,AVG(hanbai_tanka) FROM Shohin GROUP BY shohin_bunrui;
+--販売単価の平均2500円以上のみを表示
+SELECT shohin_bunrui,AVG(hanbai_tanka) FROM Shohin GROUP BY shohin_bunrui HAVING AVG(hanbai_tanka) >= 2500;
+--WHERE句で条件設定してもERRORになってしまう。
+SELECT shohin_bunrui,AVG(hanbai_tanka) FROM Shohin WHERE AVG(hanbai_tanka) >= 2500 GROUP BY shohin_bunrui;
+
+--集約化(GROUPBY)された時点で商品名という列は無くなっているからエラーになる。
+SELECT shohin_bunrui,COUNT(*) FROM Shohin GROUP BY shohin_bunrui HAVING shohin_mei='ボールペン';
+--上のコードがしたかったことはこういうことかなー
+SELECT shohin_mei FROM Shohin WHERE shohin_mei = 'ボールペン';
+
+--これではランダムに出力されてしまう。
+SELECT shohin_id,shohin_mei,hanbai_tanka,shiire_tanka FROM Shohin;
+
+--文末にORDERBY句を付けて順序を指定する                                    ↓ソートキー
+SELECT shohin_id,shohin_mei,hanbai_tanka,shiire_tanka FROM Shohin ORDER BY hanbai_tanka;
+SELECT shohin_id,shohin_mei,hanbai_tanka,shiire_tanka FROM Shohin ORDER BY shohin_id;
+SELECT shohin_id,shohin_mei,hanbai_tanka,shiire_tanka FROM Shohin ORDER BY shohin_id DESC;
+--並び順は指定しなければ昇順に並ぶ DESCで降順に並び替えられる
+--ソートキーは複数選択も可能
+SELECT shohin_id,shohin_mei,hanbai_tanka,shiire_tanka FROM Shohin ORDER BY hanbai_tanka,shohin_id;
+
+--NULLは先頭か末尾にまとめて表示される
+SELECT shohin_id,shohin_mei,hanbai_tanka,shiire_tanka FROM Shohin ORDER BY shiire_tanka;
+
+--ソートキー(ORDERBYで指定したキー)は表示用の別名も使える
+SELECT shohin_id,shohin_mei,hanbai_tanka,shiire_tanka AS "仕入れ値" FROM Shohin ORDER BY "仕入れ値";
+/*重要！SQLの処理の順番！
+①FROM=>②WHERE=>③GROUPBY=>④HAVING=>⑤SELECT=>⑥ORDERBY
+
+ 書き方の順番
+①SELECT=>②FROM>③WHERE=>④GROUPBY=>⑤HAVING=>⑥ORDERBY
+*/
+--ORDEBYには集約関数も使える。SELECT句に含まれない物も使える。
+SELECT shohin_bunrui,COUNT(*) FROM Shohin GROUP BY shohin_bunrui ORDER BY COUNT(*) DESC;
+SELECT shohin_bunrui,COUNT(*) FROM Shohin GROUP BY shohin_id ORDER BY shohin_id;
+SELECT shohin_mei,hanbai_tanka,shiire_tanka FROM Shohin ORDER BY shohin_id;
+
+--ORDEBYは列番号を指定出来る。下の２つのコードは同じ意味だが、わかりにくので列番号は使わない
+SELECT shohin_id,shohin_mei,hanbai_tanka,shiire_tanka FROM Shohin ORDER BY hanbai_tanka DESC, shohin_id;
+SELECT shohin_id,shohin_mei,hanbai_tanka,shiire_tanka FROM Shohin ORDER BY 3 DESC, 1;
+
+SELECT shohin_bunrui,SUM(hanbai_tanka),SUM(shiire_tanka) FROM Shohin GROUP BY shohin_bunrui HAVING SUM(hanbai_tanka) > SUM(shiire_tanka) * 1.5;
+
+--下２つは同じ意味のコード 全選択を*で表すか全て書くかの違い
+SELECT shohin_id,shohin_mei,shohin_bunrui,hanbai_tanka,shiire_tanka,torokubi FROM Shohin ORDER BY torokubi DESC, hanbai_tanka;
+
+SELECT * FROM Shohin ORDER BY torokubi DESC, hanbai_tanka;
