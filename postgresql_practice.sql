@@ -117,3 +117,62 @@ SELECT shohin_bunrui,SUM(hanbai_tanka),SUM(shiire_tanka) FROM Shohin GROUP BY sh
 SELECT shohin_id,shohin_mei,shohin_bunrui,hanbai_tanka,shiire_tanka,torokubi FROM Shohin ORDER BY torokubi DESC, hanbai_tanka;
 
 SELECT * FROM Shohin ORDER BY torokubi DESC, hanbai_tanka;
+
+SELECT ○○ FROM テーブル名 WHERE 条件 GROUP BY 集約キー HAVING 条件 ORDER BY ソートキー;
+
+--INSERT文 登録方法学習のために新規テーブルShohinInsテーブルを作成
+CREATE TABLE ShohinIns
+(shohin_id CHAR(4) NOT NULL,
+ shohin_mei VARCHAR(100) NOT NULL,
+ shohin_bunrui VARCHAR(32) NOT NULL,
+ hanbai_tanka INTEGER DEFAULT 0, --販売単価の初期値を０に設定 DEFAULT＜デフォルト値＞
+ shiire_tanka INTEGER ,
+ torokubi DATE ,
+ PRIMARY KEY (shohin_id));
+
+--INSERT INTO テーブル名 (列リスト) VALUES(値リスト); 列リストは省略可能
+ INSERT INTO ShohinIns (shohin_id, shohin_mei, shohin_bunrui, hanbai_tanka, shiire_tanka,torokubi) VALUES ('0001', 'Tシャツ','衣服', 1000, 500, '2009-09-20');
+
+ /*列リスト省略の書き方
+INSERT INTO VALUES(値リスト); でOK！ 列リストの順番通りに値を書く*/
+INSERT INTO ShohinIns (shohin_id, shohin_mei, shohin_bunrui, hanbai_tanka, shiire_tanka,torokubi) VALUES ('0005','圧力鍋','キッチン用品',6800,5000,'2009-01-15');
+INSERT INTO ShohinIns VALUES ('0005','圧力鍋','キッチン用品',6800,5000,'2009-01-15');
+--上記２つの文章は同じことを意味している。
+
+/*hanbai_tanka列にはDEFAULT値が設定されている
+DEFAULT値を挿入する場合の書き方は２種類,明示的にする,暗黙的にする*/
+--明示的なデフォルト値,暗黙的なデフォルト値の順に書く
+INSERT INTO ShohinIns (shohin_id, shohin_mei, shohin_bunrui, hanbai_tanka, shiire_tanka,torokubi) VALUES ('0007', 'おろしがね', 'キッチン用品', DEFAULT, 790, '2009-04-28');
+INSERT INTO ShohinIns (shohin_id, shohin_mei, shohin_bunrui,  shiire_tanka,torokubi) VALUES ('0007', 'おろしがね', 'キッチン用品', 790, '2009-04-28');
+--該当列にDEFAULTと明記するか、列リストと値リストの両方を削除して書くかの２通り
+--列名を省略するとデフォルト値orNULLが使われる
+
+--他のテーブルからデータをコピーする方法 Shohinテーブルのコピーテーブルを作って説明
+CREATE TABLE ShohinCopy
+(shohin_id CHAR(4) NOT NULL,
+ shohin_mei VARCHAR(100) NOT NULL,
+ shohin_bunrui VARCHAR(32) NOT NULL,
+ hanbai_tanka INTEGER ,
+ shiire_tanka INTEGER ,
+ torokubi DATE ,
+ PRIMARY KEY(shohin_id));
+
+/*商品データをShohinテーブルからコピーする場合
+INSERT INTO コピーを貼り付けるテーブル名 (列リスト) SELECT コピーするテーブル列リスト FROM コピーするテーブル名; */
+INSERT INTO ShohinCopy(shohin_id, shohin_mei , shohin_bunrui, hanbai_tanka , shiire_tanka , torokubi) SELECT shohin_id, shohin_mei , shohin_bunrui, hanbai_tanka , shiire_tanka , torokubi FROM Shohin;
+
+--SELECT文のバリエーション説明のためにShohinBunruiテーブルを作成
+CREATE TABLE ShohinBunrui
+(shohin_bunrui VARCHAR(32) NOT NULL,
+ sum_hanbai_tanka INTEGER ,
+ sum_shiire_tanka INTEGER ,
+ PRIMARY KEY (shohin_bunrui));
+
+ --Shohinテーブルから商品分類ごとに、販売単価の合計と仕入れ単価の合計をShohinBunruiテーブに挿入
+INSERT INTO ShohinBunrui (shohin_bunrui,sum_hanbai_tanka,sum_shiire_tanka) SELECT shohin_bunrui, SUM(hanbai_tanka), SUM(shiire_tanka) FROM Shohin GROUP BY shohin_bunrui;
+--GROUP BYしないと
+
+--ShohinBunruiへの挿入行の確認
+SELECT * FROM ShohinBunrui;
+
+--INSERT文内のSELECT文では、どんなSQL構文も使用出来る。
