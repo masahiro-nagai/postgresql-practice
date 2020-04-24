@@ -174,5 +174,21 @@ INSERT INTO ShohinBunrui (shohin_bunrui,sum_hanbai_tanka,sum_shiire_tanka) SELEC
 
 --ShohinBunruiへの挿入行の確認
 SELECT * FROM ShohinBunrui;
-
 --INSERT文内のSELECT文では、どんなSQL構文も使用出来る。
+
+--DELETEではWHERE句を用いて条件設定が可能。HAVINGは抽出する形を変えるだけなのでDELETEは出来ない
+DELETE FROM Shohin WHERE hanbai_tanka >= 4000;
+
+UPDATE Shohin SET torokubi = '2009-10-10';
+--キッチン用品の販売単価を１０倍に更新する。
+UPDATE Shohin SET hanbai_tanka = hanbai_tanka * 10 WHERE shohin_bunrui = 'キッチン用品';
+--UPDATE文でもNULLを値として使える。NOT NULL制約がかかっている列には無理。
+UPDATE Shohin SET torokubi = NULL WHERE shohin_id = '0008';
+
+--UPDATE文のSET句には複数の列を更新の対象とすることが出来る。
+UPDATE Shohin SET hanbai_tanka = hanbai_tanka * 10 WHERE shohin_bunrui = 'キッチン用品';
+UPDATE Shohin SET shiire_tanka = shiire_tanka /2 WHERE shohin_bunrui = 'キッチン用品';
+--上記２つの文を１つに求める方法を２つ カンマで区切る方法とカッコで囲む方法。何列でもOK
+UPDATE Shohin SET hanbai_tanka = hanbai_tanka * 10, shiire_tanka = shiire_tanka / 2 WHERE shohin_bunrui = 'キッチン用品'
+
+UPDATE Shohin SET (hanbai_tanka, shiire_tanka) = (hanbai_tanka * 10, shiire_tanka / 2) WHERE shohin_bunrui = 'キッチン用品';
