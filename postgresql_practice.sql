@@ -192,3 +192,37 @@ UPDATE Shohin SET shiire_tanka = shiire_tanka /2 WHERE shohin_bunrui = 'キッ�
 UPDATE Shohin SET hanbai_tanka = hanbai_tanka * 10, shiire_tanka = shiire_tanka / 2 WHERE shohin_bunrui = 'キッチン用品'
 
 UPDATE Shohin SET (hanbai_tanka, shiire_tanka) = (hanbai_tanka * 10, shiire_tanka / 2) WHERE shohin_bunrui = 'キッチン用品';
+
+--複数の操作をまとめた処理 トランザクション
+--ワンセットで行うべき処理で活用する
+
+UPDATE Shohin SET hanbai_tanka =hanbai_tanka - 1000 WHERE shohin_mei ='カッターシャツ';
+UPDATE Shohin SET hanbai_tanka= hanbai_tanka + 1000 WHERE shohin_mei ='Tシャツ';
+/*このようにカッターシャツの値引きをするけどその分をTシャツで補填しようという
+指示があった場合に片方だけしか実行しなかったら問題になってしまう。そこでトランザクション！*/
+
+--トランザクション開始文(DBMSによって違うMySQLはSTART TRANSACTION, Oracleは不要)
+BEGIN TRANSACTION;
+  --カッターシャツの販売単価を１０００円引き
+  UPDATE Shohin SET hanbai_tanka=hanbai_tanka - 1000 WHERE shohin_mei = 'カッターシャツ';
+  --Tシャツの販売単価を１０００円値上げ
+  UPDATE Shohin SET hanbai_tanka=hanbai_tanka + 1000 WHERE shohin_mei = 'Tシャツ';
+--トランザクション終了文 COMMIT(上書き保存)やROLLBACK(処理の取り消し)
+COMMIT;
+
+--商品差益テーブルを作成、商品テーブルからコピーして差益を登録
+CREATE TABLE ShohinSaeki
+(shohin_id CHAR(4) NOT NULL,
+ shohin_mei VARCHAR(100) NOT NULL,
+ hanbai_tanka INTEGER,
+ shiire_tanka INTEGER,
+ saeki INTEGER,
+ PRIMARY KEY(shohin_id));
+
+ INSERT INTO ShohinSaeki (shohin_id,shohin_mei,hanbai_tanka,shiire_tanka,saeki) SELECT shohin_id,shohin_mei,hanbai_tanka,shiire_tanka,hanbai_tanka - shiire_tanka FROM Shohin;
+
+--おろしがねの販売単価を3000円に変更し、商品差益を出し直す
+BEGIN TRANSACTION;
+ UPDATE ShohinSaeki SET hanbai_tanka = 3000 WHERE shohin_mei = 'おろしがね';
+ UPDATE ShohinSaeki SET saeki = hanbai_tanka - shiire_tanka WHERE shohin_mei = 'おろしがね';
+COMMIT;
