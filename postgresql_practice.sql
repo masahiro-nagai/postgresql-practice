@@ -226,3 +226,13 @@ BEGIN TRANSACTION;
  UPDATE ShohinSaeki SET hanbai_tanka = 3000 WHERE shohin_mei = 'おろしがね';
  UPDATE ShohinSaeki SET saeki = hanbai_tanka - shiire_tanka WHERE shohin_mei = 'おろしがね';
 COMMIT;
+
+--相関サブクエリ
+SELECT shohin_mei,shohin_bunrui,hanbai_tanka 
+FROM Shohin AS S1 
+WHERE hanbai_tanka > (SELECT AVG(hanbai_tanka) 
+FROM Shohin AS S2 
+--各商品の販売単価と平均単価を、同じ商品分類の中で行う (<テーブル名>.<列名>で書く必要がある)
+WHERE S1.shohin_bunrui = S2.shohin_bunrui 
+GROUP BY shohin_bunrui);
+/*商品分類ごとの平均販売単価より高い販売単価の商品名、商品分類、販売単価を表示する。*/
