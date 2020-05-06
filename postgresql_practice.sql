@@ -236,3 +236,6 @@ FROM Shohin AS S2
 WHERE S1.shohin_bunrui = S2.shohin_bunrui 
 GROUP BY shohin_bunrui);
 /*商品分類ごとの平均販売単価より高い販売単価の商品名、商品分類、販売単価を表示する。*/
+
+--サブクエリの応用問題。列名の作成で使ってみる。
+CREATE VIEW AvgTankaByBunrui AS SELECT shohin_id,shohin_mei,shohin_bunrui,hanbai_tanka,(SELECT AVG(hanbai_tanka) FROM Shohin AS S1 WHERE S1.shohin_bunrui = S2.shohin_bunrui GROUP BY shohin_bunrui)AS avg_hanbai_tanka FROM Shohin AS S2;
